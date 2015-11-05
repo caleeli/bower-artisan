@@ -1,0 +1,12 @@
+{
+    "name": "davidc/bower-artisan",
+    "description": "Inject your Bower dependencies right into your HTML files.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "david",
+            "email": "davidcallizaya@gmail.com"
+        }
+    ],
+    "require": {}
+}

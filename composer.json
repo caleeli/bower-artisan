@@ -8,5 +8,10 @@
             "email": "davidcallizaya@gmail.com"
         }
     ],
+    "autoload": {
+        "psr-4": {
+            "BowerArtisan\\": "src/BowerArtisan/"
+        }
+    },
     "require": {}
 }

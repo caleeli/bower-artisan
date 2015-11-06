@@ -1,4 +1,5 @@
 <?php
+
 /*
  * The MIT License
  *
@@ -40,7 +41,7 @@ class BowerHtmlCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'bower:html {filename} {--dir}';
+    protected $signature = 'bower:html {filename} {bower_components}';
 
     /**
      * The console command description.
@@ -57,8 +58,9 @@ class BowerHtmlCommand extends Command
     public function fire()
     {
         $filename = $this->argument('filename');
+        $bowerComponents = $this->argument('bower_components');
         $bower = new Bower();
-        $base = '/home/david/php-5.6.5/www/public/bower_components';
+        $base = realpath($bowerComponents);
         $bower->folder($base, $base);
         $head = [];
         foreach ($bower->components as $name => $component) {

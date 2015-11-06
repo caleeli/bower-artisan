@@ -121,7 +121,7 @@ class Bower
             foreach ($this->components[$name]->dependencies as $depName => $depVersion) {
                 if (!isset($this->components[$depName])) {
                     echo "Warning: Package $depName ($depVersion) not found for $name\n";
-                }
+                } 
                 $this->addComponentMains($res, $depName, $type);
             }
         }

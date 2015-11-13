@@ -26,7 +26,7 @@
 namespace BowerArtisan\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use App\Console\Commands\MyCommand;
+use BowerArtisan\Console\Commands\BowerHtmlCommand;
 
 /**
  * Description of BowerHtmlServiceProvider
@@ -44,7 +44,7 @@ class BowerHtmlServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->singleton('command.bower.html', function() {
-            return new MyCommand;
+            return new BowerHtmlCommand;
         });
 
         $this->commands(

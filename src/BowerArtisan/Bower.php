@@ -33,26 +33,16 @@ class Bower
 {
 
     protected $components = [];
+    protected $base;
 
-    public static function main()
-    {
-        $bower = new Bower();
-        $base = '/home/david/php-5.6.5/www/public/bower_components';
-        $bower->folder($base, $base);
-        $head = [];
-        foreach ($bower->components as $name => $component) {
-            $bower->addComponentMains($head, $name, '.css');
-        }
-        $script = [];
-        foreach ($bower->components as $name => $component) {
-            $bower->addComponentMains($script, $name, '.js');
-        }
-        print_r($head);
-        print_r($script);
-    }
-
+    /**
+     * Iterate inside a folder
+     * @param string $path
+     * @param string $base
+     */
     function folder($path, $base)
     {
+        $this->base = $base;
         foreach (glob($path . '/{,.}[!.,!..]*', GLOB_MARK | GLOB_BRACE)as $filename) {
             if (!is_file($filename) || basename($filename) != '.bower.json') {
                 continue;
@@ -121,7 +111,7 @@ class Bower
             foreach ($this->components[$name]->dependencies as $depName => $depVersion) {
                 if (!isset($this->components[$depName])) {
                     echo "Warning: Package $depName ($depVersion) not found for $name\n";
-                } 
+                }
                 $this->addComponentMains($res, $depName, $type);
             }
         }
@@ -132,5 +122,92 @@ class Bower
             }
         }
         return $res;
+    }
+
+    function addToHtml($filename, $template)
+    {
+        $relativePath = $this->getRelativePath(dirname($filename), $this->base)
+            . $relativePath ? '/' : '';
+        $head = [];
+        foreach ($this->components as $name => $component) {
+            $this->addComponentMains($head, $name, '.css');
+        }
+        $script = [];
+        foreach ($this->components as $name => $component) {
+            $this->addComponentMains($script, $name, '.js');
+        }
+        $content = file_get_contents($this->getTemplatePath($filename, $template));
+        $this->updateBlock(
+            $content, $head, '<!-- bower:css -->', '<link rel="stylesheet" type="text/css" href="' . $relativePath . '%s">'
+        );
+        $this->updateBlock(
+            $content, $script, '<!-- bower:js -->', '<script type="text/javascript" src="' . $relativePath . '%s"></script>'
+        );
+        file_put_contents($filename, $content);
+    }
+
+    private function getTemplatePath($filename, $template)
+    {
+        return file_exists($filename) ? $filename :
+            file_exists(__DIR__ . '/../../resources/views/' . $template . '.html') ?
+                __DIR__ . '/../../resources/views/' . $template . '.html' :
+                'resources/views/' . $template . '.html';
+    }
+
+    protected function getRelativePath($from, $to)
+    {
+        if (!file_exists($from)) {
+            mkdir($from, 0777, true);
+        }
+        return $this->findRelativePath(realpath($from), realpath($to));
+    }
+
+    /**
+     * Find the relative file system path between two file system paths
+     *
+     * @param  string  $frompath  Path to start from
+     * @param  string  $topath    Path we want to end up in
+     *
+     * @return string             Path leading from $frompath to $topath
+     */
+    protected function findRelativePath($frompath, $topath)
+    {
+        $from = explode(DIRECTORY_SEPARATOR, $frompath); // Folders/File
+        $to = explode(DIRECTORY_SEPARATOR, $topath); // Folders/File
+        $relpath = '';
+        $i = 0;
+        // Find how far the path is the same
+        while (isset($from[$i]) && isset($to[$i]) && ($from[$i] === $to[$i])) {
+            $i++;
+        }
+        $j = count($from) - 1;
+        // Add '..' until the path is the same
+        while ($i <= $j) {
+            $relpath .=!empty($from[$j]) ? '..' . DIRECTORY_SEPARATOR : '';
+            $j--;
+        }
+        // Go to folder from where it starts differing
+        while (isset($to[$i])) {
+            if (!empty($to[$i])) {
+                $relpath .= $to[$i] . DIRECTORY_SEPARATOR;
+            }
+            $i++;
+        }
+
+        // Strip last separator
+        return substr($relpath, 0, -1);
+    }
+
+    protected function updateBlock(&$content, $urls, $block, $format)
+    {
+        $start = strpos($content, $block);
+        $end = strpos($content, '<!-- endbower -->', $start);
+        $startLine = strrpos($content, "\n", $start - strlen($content));
+        $tabs = str_repeat(' ', $start - $startLine - 1);
+        $html = $block . "\n" . $tabs;
+        foreach ($urls as $url) {
+            $html .= sprintf($format, htmlentities($url, ENT_QUOTES)) . "\n" . $tabs;
+        }
+        $content = substr($content, 0, $start) . $html . substr($content, $end);
     }
 }

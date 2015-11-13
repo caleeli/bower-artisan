@@ -41,7 +41,7 @@ class BowerHtmlCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'bower:html {filename} {bower_components}';
+    protected $signature = 'bower:html {filename} {bower_components} {template}';
 
     /**
      * The console command description.
@@ -59,18 +59,10 @@ class BowerHtmlCommand extends Command
     {
         $filename = $this->argument('filename');
         $bowerComponents = $this->argument('bower_components');
+        $template = $this->argument('template', 'html');
         $bower = new Bower();
         $base = realpath($bowerComponents);
         $bower->folder($base, $base);
-        $head = [];
-        foreach ($bower->components as $name => $component) {
-            $bower->addComponentMains($head, $name, '.css');
-        }
-        $script = [];
-        foreach ($bower->components as $name => $component) {
-            $bower->addComponentMains($script, $name, '.js');
-        }
-        print_r($head);
-        print_r($script);
+        $bower->addToHtml($filename, $template);
     }
 }

@@ -27,6 +27,7 @@ namespace BowerArtisan\Console\Commands;
 
 use Illuminate\Console\Command;
 use BowerArtisan\Bower;
+use Exception;
 
 /**
  * Description of BowerCommand
@@ -62,6 +63,9 @@ class BowerHtmlCommand extends Command
         $template = $this->argument('template', 'html');
         $bower = new Bower();
         $base = realpath($bowerComponents);
+        if(!$base){
+            throw new Exception($bowerComponents . ' not found.');
+        }
         $bower->folder($base, $base);
         $bower->addToHtml($filename, $template);
     }

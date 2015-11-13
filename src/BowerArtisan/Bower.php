@@ -40,10 +40,10 @@ class Bower
      * @param string $path
      * @param string $base
      */
-    function folder($path, $base)
+    public function folder($path, $base)
     {
         $this->base = $base;
-        foreach (glob($path . '/{,.}[!.,!..]*', GLOB_MARK | GLOB_BRACE)as $filename) {
+        foreach (glob($path . '/{,.}[!.,!..]*.json', GLOB_MARK | GLOB_BRACE) as $filename) {
             if (!is_file($filename) || basename($filename) != '.bower.json') {
                 continue;
             }
@@ -126,8 +126,8 @@ class Bower
 
     function addToHtml($filename, $template)
     {
-        $relativePath = $this->getRelativePath(dirname($filename), $this->base)
-            . $relativePath ? '/' : '';
+        $relativePath = $this->getRelativePath(dirname($filename), $this->base);
+        $relativePath .= $relativePath ? '/' : '';
         $head = [];
         foreach ($this->components as $name => $component) {
             $this->addComponentMains($head, $name, '.css');
@@ -149,9 +149,9 @@ class Bower
     private function getTemplatePath($filename, $template)
     {
         return file_exists($filename) ? $filename :
-            file_exists(__DIR__ . '/../../resources/views/' . $template . '.html') ?
+            (file_exists(__DIR__ . '/../../resources/views/' . $template . '.html') ?
                 __DIR__ . '/../../resources/views/' . $template . '.html' :
-                'resources/views/' . $template . '.html';
+                'resources/views/' . $template . '.html');
     }
 
     protected function getRelativePath($from, $to)
